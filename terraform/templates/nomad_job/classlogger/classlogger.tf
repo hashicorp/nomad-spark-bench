@@ -4,7 +4,7 @@ variable "count"      { }
 variable "image"      { }
 
 resource "template_file" "docker" {
-  template = "${path.module}/docker.nomad.tpl"
+  template = "${file("${path.module}/docker.nomad.tpl")}"
 
   vars {
     region     = "${var.region}"
@@ -15,7 +15,7 @@ resource "template_file" "docker" {
 }
 
 resource "template_file" "consul_docker" {
-  template = "${path.module}/consul_docker.nomad.tpl"
+  template = "${file("${path.module}/consul_docker.nomad.tpl")}"
 
   vars {
     region     = "${var.region}"
@@ -26,7 +26,7 @@ resource "template_file" "consul_docker" {
 }
 
 resource "template_file" "raw_exec" {
-  template = "${path.module}/raw_exec.nomad.tpl"
+  template = "${file("${path.module}/raw_exec.nomad.tpl")}"
 
   vars {
     region     = "${var.region}"
@@ -36,7 +36,7 @@ resource "template_file" "raw_exec" {
 }
 
 resource "template_file" "consul_raw_exec" {
-  template = "${path.module}/consul_raw_exec.nomad.tpl"
+  template = "${file("${path.module}/consul_raw_exec.nomad.tpl")}"
 
   vars {
     region     = "${var.region}"

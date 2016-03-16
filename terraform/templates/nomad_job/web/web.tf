@@ -6,7 +6,7 @@ variable "nodejs_count" { }
 variable "nodejs_image" { }
 
 resource "template_file" "web" {
-  template = "${path.module}/web.nomad.tpl"
+  template = "${file("${path.module}/web.nomad.tpl")}"
 
   vars {
     region       = "${var.region}"

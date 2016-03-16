@@ -1,8 +1,6 @@
 {
   "variables": {
     "atlas_username":    "{{env `ATLAS_USERNAME`}}",
-    "git_username":      "{{env `GIT_USERNAME`}}",
-    "git_password":      "{{env `GIT_PASSWORD`}}",
     "aws_access_key":    "{{env `AWS_ACCESS_KEY_ID`}}",
     "aws_secret_key":    "{{env `AWS_SECRET_ACCESS_KEY`}}",
     "aws_region":        "{{env `AWS_DEFAULT_REGION`}}",

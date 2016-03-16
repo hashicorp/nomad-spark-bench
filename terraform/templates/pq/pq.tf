@@ -2,7 +2,7 @@ variable "service"          { }
 variable "consul_join_name" { }
 
 resource "template_file" "pq" {
-  template = "${path.module}/pq.sh.tpl"
+  template = "${file("${path.module}/pq.sh.tpl")}"
 
   vars {
     service          = "${var.service}"

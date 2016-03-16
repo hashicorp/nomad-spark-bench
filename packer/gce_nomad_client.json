@@ -1,8 +1,6 @@
 {
   "variables": {
     "atlas_username":   "{{env `ATLAS_USERNAME`}}",
-    "git_username":     "{{env `GIT_USERNAME`}}",
-    "git_password":     "{{env `GIT_PASSWORD`}}",
     "gce_project_id":   "{{env `GCE_PROJECT_ID`}}",
     "gce_zone":         "{{env `GCE_DEFAULT_ZONE`}}",
     "gce_source_image": "{{env `GCE_SOURCE_IMAGE`}}",
@@ -72,8 +70,8 @@
         "sh /ops/{{user `scripts_dir`}}/collectd.sh",
         "sh /ops/{{user `scripts_dir`}}/docker.sh {{user `ssh_username`}}",
         "sh /ops/{{user `scripts_dir`}}/consul.sh {{user `config_dir`}}",
-        "sh /ops/{{user `scripts_dir`}}/nomad_master.sh {{user `config_dir`}} {{user `git_username`}} {{user `git_password`}}",
-        "sh /ops/{{user `scripts_dir`}}/nomad_client.sh {{user `config_dir`}} {{user `git_username`}} {{user `git_password`}}",
+        "sh /ops/{{user `scripts_dir`}}/nomad_master.sh {{user `config_dir`}}",
+        "sh /ops/{{user `scripts_dir`}}/nomad_client.sh {{user `config_dir`}}",
         "sh /ops/{{user `scripts_dir`}}/dnsmasq.sh {{user `dns_listen_addr`}}",
         "sh /ops/{{user `scripts_dir`}}/results.sh",
         "sh /ops/{{user `scripts_dir`}}/cleanup.sh"
