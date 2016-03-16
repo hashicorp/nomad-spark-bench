@@ -1,0 +1,7 @@
+.terraform
+*tfstate*
+account.json
+*.pub
+*.pem
+*.csv
+*.log
