@@ -9,8 +9,6 @@ logger() {
 logger "Executing"
 
 CONFIGDIR=/ops/$1/consul
-GITUSERNAME=$2
-GITPASSWORD=$3
 GODIR=/usr/local
 GOROOT=$GODIR/go
 GOPATH=/opt/go
@@ -30,7 +28,7 @@ CONSULCONFIGDIR=/etc/consul.d
 CONSULDIR=/opt/consul
 
 logger "Pulling $ORG/$REPO repo"
-sh /ops/packer/scripts/git_repo.sh $ORG $REPO $CHECKOUT $GITUSERNAME $GITPASSWORD
+sh /ops/packer/scripts/git_repo.sh $ORG $REPO $CHECKOUT
 
 logger "Building $REPO binaries in $REPOPATH/bin"
 cd $REPOPATH

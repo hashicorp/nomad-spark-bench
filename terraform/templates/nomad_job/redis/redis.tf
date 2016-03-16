@@ -4,7 +4,7 @@ variable "count"      { }
 variable "image"      { }
 
 resource "template_file" "redis" {
-  template = "${path.module}/redis.nomad.tpl"
+  template = "${file("${path.module}/redis.nomad.tpl")}"
 
   vars {
     region     = "${var.region}"

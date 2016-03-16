@@ -18,8 +18,6 @@ From the root directory of this repository, run the below commands to build your
 cd packer
 
 ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-GIT_USERNAME=YOUR_GIT_USERNAME
-GIT_PASSWORD=YOUR_GIT_PASSWORD
 GCE_PROJECT_ID=YOUR_GOOGLE_PROJECT_ID
 GCE_DEFAULT_ZONE=us-central1-a
 GCE_SOURCE_IMAGE=ubuntu-1404-trusty-v20160114e
@@ -36,8 +34,6 @@ packer push gce_nomad_client.json
 cd packer
 
 ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-GIT_USERNAME=YOUR_GIT_USERNAME
-GIT_PASSWORD=YOUR_GIT_PASSWORD
 AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY
 AWS_DEFAULT_REGION=us-east-1
@@ -95,7 +91,6 @@ Once your infrastructure is provisioned, grab a Nomad Server to `ssh` into from 
 
 Run the below commands to schedule your first job. This will schedule 5 docker containers on 5 different nodes using the `node_class` constraint. Each job contains a different number of tasks that will be scheduled by Nomad, the job types are defined below.
 
-classlogger_2000_consul_raw_exec
 - [Docker Driver](https://www.nomadproject.io/docs/drivers/docker.html) (`classlogger_n_docker.nomad`)
   - Schedules n number of docker containers
 - [Docker Driver](https://www.nomadproject.io/docs/drivers/docker.html) with Consul (`classlogger_n_consul_docker.nomad`)

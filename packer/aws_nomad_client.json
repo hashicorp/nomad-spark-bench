@@ -1,8 +1,6 @@
 {
   "variables": {
     "atlas_username":    "{{env `ATLAS_USERNAME`}}",
-    "git_username":      "{{env `GIT_USERNAME`}}",
-    "git_password":      "{{env `GIT_PASSWORD`}}",
     "aws_access_key":    "{{env `AWS_ACCESS_KEY_ID`}}",
     "aws_secret_key":    "{{env `AWS_SECRET_ACCESS_KEY`}}",
     "aws_region":        "{{env `AWS_DEFAULT_REGION`}}",
@@ -79,8 +77,8 @@
         "sh /ops/{{user `scripts_dir`}}/collectd.sh",
         "sh /ops/{{user `scripts_dir`}}/docker.sh {{user `ssh_username`}}",
         "sh /ops/{{user `scripts_dir`}}/consul.sh {{user `config_dir`}}",
-        "sh /ops/{{user `scripts_dir`}}/nomad_master.sh {{user `config_dir`}} {{user `git_username`}} {{user `git_password`}}",
-        "sh /ops/{{user `scripts_dir`}}/nomad_client.sh {{user `config_dir`}} {{user `git_username`}} {{user `git_password`}}",
+        "sh /ops/{{user `scripts_dir`}}/nomad_master.sh {{user `config_dir`}}",
+        "sh /ops/{{user `scripts_dir`}}/nomad_client.sh {{user `config_dir`}}",
         "sh /ops/{{user `scripts_dir`}}/dnsmasq.sh {{user `dns_listen_addr`}}",
         "sh /ops/{{user `scripts_dir`}}/results.sh",
         "sh /ops/{{user `scripts_dir`}}/cleanup.sh"

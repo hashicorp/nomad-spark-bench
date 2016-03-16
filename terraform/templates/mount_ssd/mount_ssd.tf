@@ -2,7 +2,7 @@ variable "mount_dir"      { }
 variable "local_ssd_name" { }
 
 resource "template_file" "mount_ssd" {
-  template = "${path.module}/mount_ssd.sh.tpl"
+  template = "${file("${path.module}/mount_ssd.sh.tpl")}"
 
   vars {
     mount_dir      = "${var.mount_dir}"
