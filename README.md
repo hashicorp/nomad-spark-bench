@@ -1,6 +1,6 @@
 ## Nomad C1M Challenge
 
-This repository contains the infrastructure code necessary to run the million container challenge using [HashiCorp's Nomad](https://www.nomadproject.io/) on [Google's Compute Engine Cloud](https://cloud.google.com/compute/) or [Amazon Web Services](http://aws.amazon.com/).
+This repository contains the infrastructure code necessary to run the [Million Container Challenge](https://hashicorp.com/c1m.html) using [HashiCorp's Nomad](https://www.nomadproject.io/) on [Google's Compute Engine Cloud](https://cloud.google.com/compute/) or [Amazon Web Services](http://aws.amazon.com/).
 
 We leverage [Packer](https://www.packer.io/) and [Terraform](https://www.terraform.io/) to provision the infrastructure. Below are the instructions to provision the infrastructure.
 
