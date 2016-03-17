@@ -1,4 +1,4 @@
-job "bench-raw-exec-classlogger" {
+job "classlogger-raw-exec" {
   region      = "${region}"
   datacenters = ["${datacenter}"]
   type        = "service"
