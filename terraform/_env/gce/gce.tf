@@ -25,18 +25,18 @@ variable "us_central1_region"     { default = "us-central1" }
 variable "us_central1_cidr"       { default = "10.139.0.0/16" }
 variable "us_central1_zones"      { default = "us-central1-b,us-central1-c,us-central1-f" }
 
-variable "utility_machine"        { default = "n1-standard-2" }
-variable "utility_disk"           { default = "10" }
-variable "consul_server_machine"  { default = "n1-standard-2" }
+variable "utility_machine"        { default = "n1-standard-8" }
+variable "utility_disk"           { default = "50" }
+variable "consul_server_machine"  { default = "n1-standard-32" }
 variable "consul_server_disk"     { default = "10" }
 variable "consul_servers"         { default = "3" }
-variable "nomad_server_machine"   { default = "n1-standard-2" }
-variable "nomad_server_disk"      { default = "10" }
-variable "nomad_servers"          { default = "3" }
-variable "nomad_client_machine"   { default = "n1-standard-2" }
-variable "nomad_client_disk"      { default = "10" }
-variable "nomad_client_groups"    { default = "5" }
-variable "nomad_clients"          { default = "5" }
+variable "nomad_server_machine"   { default = "n1-standard-32" }
+variable "nomad_server_disk"      { default = "500" }
+variable "nomad_servers"          { default = "5" }
+variable "nomad_client_machine"   { default = "n1-standard-8" }
+variable "nomad_client_disk"      { default = "20" }
+variable "nomad_client_groups"    { default = "10" }
+variable "nomad_clients"          { default = "5000" }
 
 provider "google" {
   credentials = "${var.credentials}"
