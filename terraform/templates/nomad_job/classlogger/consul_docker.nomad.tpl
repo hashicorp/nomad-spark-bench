@@ -1,4 +1,4 @@
-job "classlogger-docker" {
+job "classlogger-consul-docker" {
   region      = "${region}"
   datacenters = ["${datacenter}"]
   type        = "service"
