@@ -31,10 +31,10 @@ variable "consul_server_machine" { default = "c3.8xlarge" }
 variable "consul_server_disk"    { default = "10" }
 variable "consul_servers"        { default = "3" }
 variable "nomad_server_machine"  { default = "c3.8xlarge" }
-variable "nomad_server_disk"     { default = "501" }
+variable "nomad_server_disk"     { default = "500" }
 variable "nomad_servers"         { default = "5" }
 variable "nomad_client_machine"  { default = "c3.2xlarge" }
-variable "nomad_client_disk"     { default = "19" }
+variable "nomad_client_disk"     { default = "20" }
 variable "nomad_client_groups"   { default = "10" }
 variable "nomad_clients"         { default = "5000" }
 
