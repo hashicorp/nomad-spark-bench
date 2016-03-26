@@ -17,10 +17,10 @@ From the root directory of this repository, run the below commands to build your
 ```
 cd packer
 
-ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-GCE_PROJECT_ID=YOUR_GOOGLE_PROJECT_ID
-GCE_DEFAULT_ZONE=us-central1-a
-GCE_SOURCE_IMAGE=ubuntu-1404-trusty-v20160114e
+export ATLAS_USERNAME=YOUR_ATLAS_USERNAME
+export GCE_PROJECT_ID=YOUR_GOOGLE_PROJECT_ID
+export GCE_DEFAULT_ZONE=us-central1-a
+export GCE_SOURCE_IMAGE=ubuntu-1404-trusty-v20160114e
 
 packer push gce_utility.json
 packer push gce_consul_server.json
@@ -33,11 +33,11 @@ packer push gce_nomad_client.json
 ```
 cd packer
 
-ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY
-AWS_DEFAULT_REGION=us-east-1
-AWS_SOURCE_AMI=ami-9a562df2
+export ATLAS_USERNAME=YOUR_ATLAS_USERNAME
+export AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_SOURCE_AMI=ami-9a562df2
 
 packer push aws_utility.json
 packer push aws_consul_server.json
@@ -60,9 +60,9 @@ You only need to run the `terraform remote config` command once.
 ```
 cd terraform/_env/gce
 
-ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-ATLAS_TOKEN=YOUR_ATLAS_TOKEN
-ATLAS_ENVIRONMENT=c1m-gce
+export ATLAS_USERNAME=YOUR_ATLAS_USERNAME
+export ATLAS_TOKEN=YOUR_ATLAS_TOKEN
+export ATLAS_ENVIRONMENT=c1m-gce
 
 terraform remote config -backend-config name=$ATLAS_USERNAME/$ATLAS_ENVIRONMENT # Only need to run this command once
 terraform get
@@ -74,9 +74,9 @@ terraform push -name $ATLAS_USERNAME/$ATLAS_ENVIRONMENT -var "atlas_token=$ATLAS
 ```
 cd terraform/_env/aws
 
-ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-ATLAS_TOKEN=YOUR_ATLAS_TOKEN
-ATLAS_ENVIRONMENT=c1m-aws
+export ATLAS_USERNAME=YOUR_ATLAS_USERNAME
+export ATLAS_TOKEN=YOUR_ATLAS_TOKEN
+export ATLAS_ENVIRONMENT=c1m-aws
 
 terraform remote config -backend-config name=$ATLAS_USERNAME/$ATLAS_ENVIRONMENT # Only need to run this command once
 terraform get
