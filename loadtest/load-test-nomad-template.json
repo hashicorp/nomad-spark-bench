@@ -1,0 +1,21 @@
+{
+  "Job": {
+    "TaskGroups": [
+      {
+        "Tasks": [
+          {
+            "Driver": "docker",
+            "Config": {
+              "volumes": [
+                "/mnt/internal-load-test-events:/internal-load-test-events"
+              ]
+            },
+            "Meta": {
+              "spark.nomad.role": "driver"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

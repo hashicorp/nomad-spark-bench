@@ -1,1 +1,1 @@
-output "user_data" { value = "${path.module}/utility.sh.tpl" }
+output "user_data" { value = "${file("${path.module}/utility.sh.tpl")}" }

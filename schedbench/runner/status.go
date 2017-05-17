@@ -31,25 +31,34 @@ type statusServer struct {
 	// The updateCh is used to pass status data from the scanner to the
 	// result collector.
 	updateCh chan *statusUpdate
+	// The doneCh is used to signal that the stats file has been written
+	done sync.WaitGroup
 }
 
 // newStatusServer makes a new statusServer and initializes the fields.
 func newStatusServer(outStream io.Reader) *statusServer {
-	return &statusServer{
+	server := &statusServer{
 		outStream: bufio.NewScanner(outStream),
 		updateCh:  make(chan *statusUpdate, 512),
 	}
+	server.done.Add(1)
+	return server
 }
 
 // run is the main loop of the status server which is responsible for
 // scanning lines of output from a test, parsing it into a status update,
 // and sending it down to the update handler.
 func (s *statusServer) run() {
-	// Start the update parser
+	defer s.done.Done()
+
+	// Start the periodic update time logger
 	doneCh := make(chan struct{})
 	defer close(doneCh)
-	go s.handleUpdates(doneCh)
 	go s.logUpdateTimes(doneCh)
+
+	// Start the update parser
+	defer close(s.updateCh)
+	go s.handleUpdates()
 
 	for s.outStream.Scan() {
 		payload := s.outStream.Text()
@@ -93,14 +102,14 @@ func (s *statusServer) run() {
 	}
 
 	// Check if we broke out due to an error
-	if err := s.outStream.Err(); err != nil {
+	if err := s.outStream.Err(); err != nil && err != os.ErrClosed {
 		log.Fatalf("[ERR] runner: failed reading payload: %v", err)
 	}
 }
 
 // handleUpdates is used to read updates off of the updateCh and populate them
-// into a time-indexed map. Blocks until the doneCh is closed.
-func (s *statusServer) handleUpdates(doneCh <-chan struct{}) {
+// into a time-indexed map. Blocks until the updateCh is closed.
+func (s *statusServer) handleUpdates() {
 	// Used to store events and times
 	metrics := make(map[int64]map[string]float64)
 
@@ -113,6 +122,15 @@ func (s *statusServer) handleUpdates(doneCh <-chan struct{}) {
 	for {
 		select {
 		case update := <-s.updateCh:
+
+			if update == nil {
+				// Format and write the metrics to the result file.
+				if err := writeResult(metrics); err != nil {
+					log.Fatalf("[ERR] runner: failed writing result: %v", err)
+				}
+				return
+			}
+
 			// Compute elapsed time and log the value away. We reduce to
 			// milliseconds here so that our map keys are guaranteed unique
 			// per millisecond. We otherwise could have a rounding problem.
@@ -127,13 +145,6 @@ func (s *statusServer) handleUpdates(doneCh <-chan struct{}) {
 			s.lastUpdate = time.Now()
 			s.totalUpdates++
 			s.updateMetricsLock.Unlock()
-
-		case <-doneCh:
-			// Format and write the metrics to the result file.
-			if err := writeResult(metrics); err != nil {
-				log.Fatalf("[ERR] runner: failed writing result: %v", err)
-			}
-			return
 		}
 	}
 }

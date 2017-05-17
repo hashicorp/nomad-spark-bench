@@ -10,8 +10,8 @@ logger "Executing"
 
 cd /tmp
 
-CONFIGDIR=/ops/$1/nomad
-NOMADVERSION=0.4.0
+CONFIGDIR=/ops/$1
+NOMADVERSION=0.5.6
 NOMADDOWNLOAD=https://releases.hashicorp.com/nomad/${NOMADVERSION}/nomad_${NOMADVERSION}_linux_amd64.zip
 NOMADCONFIGDIR=/etc/nomad.d
 NOMADDIR=/opt/nomad
@@ -32,13 +32,18 @@ chmod 0777 $NOMADDIR
 mkdir "$NOMADDIR/data"
 
 # Nomad config
-cp $CONFIGDIR/default.hcl $NOMADCONFIGDIR/.
+cp $CONFIGDIR/nomad/*.hcl $NOMADCONFIGDIR/.
+
+# Consul config
+cp ${CONFIGDIR}/consul/nomad_client.json /etc/consul-optional.d/.
+cp ${CONFIGDIR}/consul/nomad_server.json /etc/consul-optional.d/.
 
 # Upstart config
-cp $CONFIGDIR/upstart.nomad /etc/init/nomad.conf
+echo manual > /etc/init/nomad.override
+cp $CONFIGDIR/nomad/upstart.nomad /etc/init/nomad.conf
 
 # Nomad join script
-cp $CONFIGDIR/nomad_join.sh $NOMADDIR/.
+cp $CONFIGDIR/nomad/nomad_join.sh $NOMADDIR/.
 chmod +x $NOMADDIR/nomad_join.sh
 
 logger "Completed"

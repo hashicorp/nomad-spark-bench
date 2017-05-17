@@ -13,6 +13,7 @@ apt-get -y update
 apt-get -y upgrade
 
 logger "Install dependencies"
-apt-get -y install curl zip unzip tar git build-essential jq
+apt-get -y install curl zip unzip tar git jq openjdk-7-jdk
+echo "JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64" | sudo tee -a /etc/environment
 
 logger "Completed"

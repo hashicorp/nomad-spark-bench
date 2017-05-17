@@ -1,0 +1,15 @@
+--master nomad
+--deploy-mode cluster
+--driver-memory 1600m
+--executor-memory 1600m
+--driver-class-path local:///spark-load-test.jar
+--conf spark.extraListeners=com.hashicorp.nomad.spark.LoadTestEventListener
+--conf spark.nomad.executorCountDir=/internal-load-test-events
+--conf spark.nomad.datacenters=azure-eastus2
+--conf spark.nomad.job.template=template.json
+--docker-image spark:load-test
+--distribution local:///usr/local/spark
+--num-executors 100
+--class org.apache.spark.examples.SparkPi
+local:///usr/local/spark/examples/jars/spark-examples_2.11-2.1.0.jar
+100000

@@ -1,0 +1,22 @@
+<configuration>
+    <property>
+        <name>dfs.permissions.enabled</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>dfs.nameservices</name>
+        <value>hdfs-cluster</value>
+    </property>
+    <property>
+        <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>dfs.ha.namenodes.hdfs-cluster</name>
+        <value>nn0</value>
+    </property>
+    <property>
+        <name>dfs.namenode.rpc-address.hdfs-cluster.nn0</name>
+        <value>hdfs-namenode.service.consul:8020</value>
+    </property>
+</configuration>

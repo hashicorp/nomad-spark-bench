@@ -61,7 +61,11 @@ func main() {
 	runCmd := exec.Command(path, "run")
 	runCmd.Stderr = os.Stdout
 	if out, err := runCmd.Output(); err != nil {
-		log.Fatalf("[ERR] runner: failed running benchmark: %v\nStdout: %s", err, string(out))
+		log.Printf("[ERR] runner: failed running benchmark: %v\nStdout: %s", err, string(out))
+		log.Print("[DEBUG] runner: killing status command...")
+		if err := statusCmd.Process.Kill(); err != nil {
+			log.Fatalf("[ERR] runner: failed to kill status command: %v", err)
+		}
 	}
 
 	// Wait for the status command to return
@@ -69,4 +73,5 @@ func main() {
 	if err := statusCmd.Wait(); err != nil {
 		log.Fatalf("[ERR] runner: status command got error: %v", err)
 	}
+	srv.done.Wait()
 }

@@ -18,7 +18,7 @@ export GOROOT=$GOROOT
 export GOPATH=$GOPATH
 export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
-ORG=hashicorp
+ORG=barnardb
 REPO=c1m
 CHECKOUT=master
 ORGPATH=$GOSRC/github.com/$ORG

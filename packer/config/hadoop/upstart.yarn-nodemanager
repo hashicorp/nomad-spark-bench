@@ -1,0 +1,34 @@
+description "YARN NodeManager"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+# Respawn infinitely
+respawn limit unlimited
+
+console log
+
+nice -10
+limit nofile 65535 65535
+
+pre-start script
+  while [ ! -f /etc/hadoop.d/configured ]
+  do
+    DT=$(date '+%Y/%m/%d %H:%M:%S')
+    echo "$DT: Waiting on configuration"
+    sleep 1
+  done
+end script
+
+script
+  if [ -f "/etc/service/hadoop" ]; then
+    . /etc/service/hadoop
+  fi
+
+  while read -r env; do export "$env"; done </etc/environment
+  exec /opt/hadoop/bin/yarn nodemanager >>/var/log/yarn_nodemanager.log 2>&1
+end script
+
+post-start script
+  echo "yarn_nodemanager,$(hostname),$(date '+%s')" | sudo tee -a /home/ubuntu/c1m/spawn/spawn.csv
+end script

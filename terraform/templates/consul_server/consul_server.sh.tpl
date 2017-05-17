@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 logger() {
   DT=$(date '+%Y/%m/%d %H:%M:%S')
@@ -8,6 +9,8 @@ logger() {
 }
 
 logger "Begin script"
+
+${cloud_specific}
 
 logger "Setting private key"
 echo "${private_key}" | sudo tee /home/ubuntu/c1m/site.pem > /dev/null
@@ -28,15 +31,13 @@ sudo chmod 0755 $CONSUL_DATA_DIR
 
 sudo sed -i -- "s/{{ data_dir }}/$${CONSUL_DATA_DIR//\//\\\/}/g" $CONSUL_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ local_ip }}/$METADATA_LOCAL_IP/g" $CONSUL_DEFAULT_CONFIG
-sudo sed -i -- "s/{{ atlas_username }}/${atlas_username}/g" $CONSUL_DEFAULT_CONFIG
-sudo sed -i -- "s/{{ atlas_environment }}/${atlas_environment}/g" $CONSUL_DEFAULT_CONFIG
-sudo sed -i -- "s/{{ atlas_token }}/${atlas_token}/g" $CONSUL_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ datacenter }}/${datacenter}/g" $CONSUL_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ node_name }}/$NODE_NAME/g" $CONSUL_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ log_level }}/${consul_log_level}/g" $CONSUL_DEFAULT_CONFIG
 
 logger "Configuring Consul server"
 CONSUL_SERVER_CONFIG=/etc/consul.d/consul_server.json
+sudo mv /etc/consul-optional.d/consul_server.json $CONSUL_SERVER_CONFIG
 
 sudo sed -i -- "s/{{ bootstrap_expect }}/${bootstrap_expect}/g" $CONSUL_SERVER_CONFIG
 sudo sed -i -- "s/\"{{ tags }}\"/\"${provider}\", \"${region}\", \"${zone}\", \"${machine_type}\"/g" $CONSUL_SERVER_CONFIG

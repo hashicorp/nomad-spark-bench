@@ -9,6 +9,8 @@ logger() {
 
 logger "Begin script"
 
+${cloud_specific}
+
 logger "Setting private key"
 echo "${private_key}" | sudo tee /home/ubuntu/c1m/site.pem > /dev/null
 sudo chmod 400 /home/ubuntu/c1m/site.pem
@@ -29,15 +31,13 @@ sudo chmod 0755 $CONSUL_DATA_DIR
 
 sudo sed -i -- "s/{{ data_dir }}/$${CONSUL_DATA_DIR//\//\\\/}/g" $CONSUL_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ local_ip }}/$METADATA_LOCAL_IP/g" $CONSUL_DEFAULT_CONFIG
-sudo sed -i -- "s/{{ atlas_username }}/${atlas_username}/g" $CONSUL_DEFAULT_CONFIG
-sudo sed -i -- "s/{{ atlas_environment }}/${atlas_environment}/g" $CONSUL_DEFAULT_CONFIG
-sudo sed -i -- "s/{{ atlas_token }}/${atlas_token}/g" $CONSUL_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ datacenter }}/${datacenter}/g" $CONSUL_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ node_name }}/$NODE_NAME/g" $CONSUL_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ log_level }}/${consul_log_level}/g" $CONSUL_DEFAULT_CONFIG
 
 logger "Configuring Consul Nomad server"
 CONSUL_NOMAD_SERVER_CONFIG=/etc/consul.d/nomad_server.json
+sudo mv /etc/consul-optional.d/nomad_server.json $CONSUL_NOMAD_SERVER_CONFIG
 
 sudo sed -i -- "s/\"{{ tags }}\"/\"${provider}\", \"${region}\", \"${zone}\", \"${machine_type}\"/g" $CONSUL_NOMAD_SERVER_CONFIG
 
@@ -60,16 +60,21 @@ sudo sed -i -- "s/{{ name }}/$NODE_NAME/g" $NOMAD_DEFAULT_CONFIG
 sudo sed -i -- "s/{{ log_level }}/${nomad_log_level}/g" $NOMAD_DEFAULT_CONFIG
 
 logger "Configuring Nomad server"
+
+sudo rm -f /etc/nomad.d/client.hcl
+
 NOMAD_SERVER_CONFIG=/etc/nomad.d/server.hcl
 
 sudo sed -i -- "s/{{ local_ip }}/$METADATA_LOCAL_IP/g" $NOMAD_SERVER_CONFIG
 sudo sed -i -- "s/{{ bootstrap_expect }}/${bootstrap_expect}/g" $NOMAD_SERVER_CONFIG
 
 echo $(date '+%s') | sudo tee -a /etc/nomad.d/configured > /dev/null
+sudo rm /etc/init/nomad.override
 sudo service nomad start || sudo service nomad restart
 
 logger "Nomad server join: ${nomad_join_name}"
 sleep 15 # Wait for Nomad service to fully boot
+sudo sed -i 's|  #!/bin/bash|#!/bin/bash|' /opt/nomad/nomad_join.sh
 sudo /opt/nomad/nomad_join.sh "${nomad_join_name}" "server"
 
 logger "Done"

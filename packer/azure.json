@@ -1,0 +1,97 @@
+{
+  "variables": {
+    "arm_client_id":       "{{env `ARM_CLIENT_ID`}}",
+    "arm_client_secret":   "{{env `ARM_CLIENT_SECRET`}}",
+    "arm_subscription_id": "{{env `ARM_SUBSCRIPTION_ID`}}",
+    "arm_environment":     "{{env `ARM_ENVIRONMENT`}}",
+
+    "name":              "spark-load-test",
+    "scripts_dir":       "packer/scripts",
+    "config_dir":        "packer/config",
+    "ssh_username":      "ubuntu",
+    "dns_listen_addr":   "127.0.0.1"
+  },
+  "push": {
+    "name": "{{user `atlas_username`}}/{{user `name`}}",
+    "base_dir": "../.",
+    "include": [
+      "{{user `scripts_dir`}}/*",
+      "{{user `config_dir`}}/*",
+      "{{user `config_dir`}}/consul/*",
+      "{{user `config_dir`}}/nomad/*"
+    ],
+    "vcs": false
+  },
+  "builders": [
+    {
+      "type":                   "azure-arm",
+
+      "client_id":              "{{user `arm_client_id`}}",
+      "client_secret":          "{{user `arm_client_secret`}}",
+      "subscription_id":        "{{user `arm_subscription_id`}}",
+
+      "resource_group_name":    "{{user `resource_group`}}",
+      "storage_account":        "{{user `storage_account`}}",
+      "capture_container_name": "images",
+      "capture_name_prefix":    "{{user `name`}}",
+      "ssh_username":           "ubuntu",
+
+      "location":               "East US 2",
+
+      "os_type":                "Linux",
+      "image_publisher":        "Canonical",
+      "image_offer":            "UbuntuServer",
+      "image_sku":              "14.04.4-LTS",
+
+      "azure_tags": {
+        "artifact": "{{user `name`}}"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo {{user `ssh_username`}} | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "mkdir -p /ops/{{user `scripts_dir`}}",
+        "chmod a+w /ops/{{user `scripts_dir`}}",
+        "mkdir -p /ops/{{user `config_dir`}}",
+        "chmod a+w /ops/{{user `config_dir`}}"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "{{user `scripts_dir`}}/.",
+      "destination": "/ops/{{user `scripts_dir`}}"
+    },
+    {
+      "type": "file",
+      "source": "{{user `config_dir`}}/.",
+      "destination": "/ops/{{user `config_dir`}}"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo {{user `ssh_username`}} | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "set -e",
+        "sh /ops/{{user `scripts_dir`}}/dependencies.sh",
+        "sh /ops/{{user `scripts_dir`}}/azure_cli.sh",
+        "sh /ops/{{user `scripts_dir`}}/docker.sh {{user `ssh_username`}}",
+        "sh /ops/{{user `scripts_dir`}}/spark.sh",
+        "sh /ops/{{user `scripts_dir`}}/load_test.sh",
+        "sh /ops/{{user `scripts_dir`}}/consul.sh {{user `config_dir`}}",
+        "sh /ops/{{user `scripts_dir`}}/nomad.sh {{user `config_dir`}}",
+        "sh /ops/{{user `scripts_dir`}}/hadoop.sh {{user `config_dir`}}",
+        "sh /ops/{{user `scripts_dir`}}/dnsmasq.sh {{user `dns_listen_addr`}}",
+        "sh /ops/{{user `scripts_dir`}}/results.sh",
+        "sh /ops/{{user `scripts_dir`}}/cleanup.sh",
+        "/usr/sbin/waagent -force -deprovision && export HISTSIZE=0 && sync"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest"
+    }
+  ]
+}

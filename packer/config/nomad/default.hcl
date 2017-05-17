@@ -11,8 +11,3 @@ advertise {
   rpc  = "{{ local_ip }}:4647"
   serf = "{{ local_ip }}:4648"
 }
-
-telemetry {
-  statsite_address = "statsite.service.consul:8125"
-  disable_hostname = true
-}

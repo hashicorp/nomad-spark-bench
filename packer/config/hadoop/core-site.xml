@@ -1,0 +1,10 @@
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://hdfs-namenode.service.consul/</value>
+    </property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>{{ data_dir }}</value>
+    </property>
+</configuration>

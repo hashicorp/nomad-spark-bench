@@ -1,89 +1,87 @@
-## Nomad C1M Challenge
+## Spark Load Test
 
-This repository contains the infrastructure code necessary to run the [Million Container Challenge](https://hashicorp.com/c1m.html) using [HashiCorp's Nomad](https://www.nomadproject.io/) on [Google's Compute Engine Cloud](https://cloud.google.com/compute/) or [Amazon Web Services](http://aws.amazon.com/).
+This repository contains the infrastructure code to run a Spark load test to compare Spark performance on Nomad and YARN.
 
 We leverage [Packer](https://www.packer.io/) and [Terraform](https://www.terraform.io/) to provision the infrastructure. Below are the instructions to provision the infrastructure.
 
-### Build Artifacts with Packer
 
-Artifacts need to first be created for Terraform to provision. This can be accomplished by running the below commands in the [packer/.](packer) directory. You can alternatively build these images locally by running the `packer build` command instead of building them in Atlas with `packer push`.
+### Provisioning Infrastructure
 
-From the root directory of this repository, run the below commands to build your images with [Packer](https://www.packer.io/).
+##### Step 0: Set Up Credentials
 
-##### GCE
-
-**If you're using GCE** you will need to get an [`account.json`](https://www.packer.io/docs/builders/googlecompute.html) file from GCE and place it in the root of this repository.
+Create an SSH key for use with the cluster:
 
 ```
-cd packer
-
-export ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-export GCE_PROJECT_ID=YOUR_GOOGLE_PROJECT_ID
-export GCE_DEFAULT_ZONE=us-central1-a
-export GCE_SOURCE_IMAGE=ubuntu-1404-trusty-v20160114e
-
-packer push gce_utility.json
-packer push gce_consul_server.json
-packer push gce_nomad_server.json
-packer push gce_nomad_client.json
+openssl genrsa -out cluster_ssh_key.pem 2048
+chmod 600 cluster_ssh_key.pem
+ssh-keygen -y -f cluster_ssh_key.pem > cluster_ssh_key.pub
 ```
 
-##### AWS
+The sections that follow assume that your Azure credentials are available in these environment variables:
 
 ```
-cd packer
+export ARM_SUBSCRIPTION_ID=YOUR_SUBSCRIPTION_ID
+export ARM_CLIENT_ID=YOUR_CLIENT_ID
+export ARM_CLIENT_SECRET=YOUR_CLIENT_SECRET
+export ARM_TENANT_ID=YOUR_TENANT_ID
 
-export ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-export AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID
-export AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY
-export AWS_DEFAULT_REGION=us-east-1
-export AWS_SOURCE_AMI=ami-9a562df2
-
-packer push aws_utility.json
-packer push aws_consul_server.json
-packer push aws_nomad_server.json
-packer push aws_nomad_client.json
+export ARM_ENVIRONMENT=public
 ```
 
-### Provision Infrastructure with Terraform
+##### Step 1: Provision Disk Image Storage Account with Terraform
 
-To provision the infrastructure necessary for C1M, run the below Terraform commands. If you want to provision locally rather than in Atlas, use the `terraform apply` command instead of `terraform push`.
+We're going to build a disk image using packer in the next step, and on Azure we first need a storage account to put the image in.
 
-From the root directory of this repository, run the below commands to provision your infrastructure with [Terraform](https://www.terraform.io/).
-
-You only need to run the `terraform remote config` command once.
-
-##### GCE
-
-**If you're using GCE** you will need to get an [`account.json`](https://www.terraform.io/docs/providers/google/) file from GCE and place it in the directory you're running Terraform commands from (`terraform/_env/gce`).
+Apply [Terraform](https://www.terraform.io/) in the `terraform/_env/azure_images` directory.
 
 ```
-cd terraform/_env/gce
-
-export ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-export ATLAS_TOKEN=YOUR_ATLAS_TOKEN
-export ATLAS_ENVIRONMENT=c1m-gce
-
-terraform remote config -backend-config name=$ATLAS_USERNAME/$ATLAS_ENVIRONMENT # Only need to run this command once
-terraform get
-terraform push -name $ATLAS_USERNAME/$ATLAS_ENVIRONMENT -var "atlas_token=$ATLAS_TOKEN" -var "atlas_username=$ATLAS_USERNAME"
+cd terraform/_env/azure_images
+terraform apply
+cd -
 ```
 
-##### AWS
+##### Step 2: Build Disk Image with Packer
+
+A disk image needs to be created which Terraform will use to provision VMs.
+
+Run [Packer](https://www.packer.io/) with the resource group and storage account created in the previous step
+and capture the OSDiskUri:
 
 ```
-cd terraform/_env/aws
-
-export ATLAS_USERNAME=YOUR_ATLAS_USERNAME
-export ATLAS_TOKEN=YOUR_ATLAS_TOKEN
-export ATLAS_ENVIRONMENT=c1m-aws
-
-terraform remote config -backend-config name=$ATLAS_USERNAME/$ATLAS_ENVIRONMENT # Only need to run this command once
-terraform get
-terraform push -name $ATLAS_USERNAME/$ATLAS_ENVIRONMENT -var "atlas_token=$ATLAS_TOKEN" -var "atlas_username=$ATLAS_USERNAME"
+packer build \
+    -var resource_group=$(terraform output -state=terraform/_env/azure_images/terraform.tfstate resource_group) \
+    -var storage_account=$(terraform output -state=terraform/_env/azure_images/terraform.tfstate storage_account) \
+    packer/azure.json \
+    | tee >(awk '/^OSDiskUri: https:/ { print $2 > "packer/latest_disk_image.url" }')
 ```
+
+At the end of the build, packer will output a number of URLs.
+Copy the `OSDiskUri` to use in the next step.
+
+
+##### Step 3: Provision Infrastructure with Terraform
+
+To provision the infrastructure necessary to run the load test,
+apply [Terraform](https://www.terraform.io/) in the `terraform/_env/azure_images` directory,
+passing in the URI of the image generated in the previous step.
+
+Note that while the Terraform Azure provisioner will read your client ID and secret from the environment variables set above,
+we need to pass the client secret to the VMs we create, and we don't have a way to access it from within Terraform,
+so we need to make it available explicitly.
 
 To tweak the infrastructure size, update the Terraform variable(s) for the region(s) you're provisioning.
+
+```
+cd terraform/_env/azure
+terraform get
+TF_VAR_arm_client_secret=$ARM_CLIENT_SECRET terraform apply -var disk_image="$(cat ../../../packer/latest_disk_image.url)"
+cd -
+```
+
+##
+
+NOMAD_ADDR=http://nomad-server.service.consul:4646 ./run.sh nomad-args.txt nomad-0 1
+
 
 ## Scheduling with Nomad
 
@@ -160,10 +158,11 @@ Use the below `consul exec` commands to run a Nomad join operation on any subset
 
 ```
 consul exec -datacenter gce-us-central1 -service nomad-server 'sudo /opt/nomad/nomad_join.sh "nomad-server?dc=gce-us-central1&passing" "server"'
+consul exec -service nomad-server 'sudo /opt/nomad/nomad_join.sh "nomad-server?passing" "server"'
 ```
 
 ##### Join Nomad Client to Nomad Servers
 
 ```
-consul exec -datacenter gce-us-central1 -service nomad-client 'sudo /opt/nomad/nomad_join.sh "nomad-server?dc=gce-us-central1&passing"'
+consul exec -service nomad-client 'sudo /opt/nomad/nomad_join.sh "nomad-server?passing"'
 ```
